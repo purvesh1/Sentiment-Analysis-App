@@ -3,4 +3,13 @@ streamlit==1.18.1
 transformers
 torch
 nltk
+langchain==0.0.154
+faiss-cpu==1.7.4
+altair<5
+scipy
+tweepy
+folium
+geopy
+streamlit_folium
+wordcloud
 -e .
