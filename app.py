@@ -82,7 +82,7 @@ def generate_pie_chart(address, rating, positive, negative, neutral):
     plt.axis('equal')  # Equal aspect ratio ensures the pie chart appears as a circle
 
     # Add store name and rating at the bottom of the pie chart
-    plt.text(0.1, 1.3, f"Store: {address}", ha='center', fontsize=7, weight='bold')  # Changed y-coordinate to 1.1
+    plt.text(-0.1, 1.3, f"{address}", ha='center', fontsize=7, weight='bold')  # Changed y-coordinate to 1.1
     plt.text(0.6, 1.15, f"Rating: {rating}", ha='center', fontsize=10, weight='bold')  # Changed y-coordinate to 1
 
     # Save the pie chart to a bytes buffer
