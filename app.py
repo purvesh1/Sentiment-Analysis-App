@@ -9,66 +9,14 @@ import folium
 from streamlit_folium import folium_static
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
-from wordcloud import ImageColorGenerator, WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import numpy as np
 import io
 import base64
+from sentimentAnalysisApp.pipeline.prediction import PredictionPipeline
+
 
 st.set_option('deprecation.showPyplotGlobalUse', False)       
-
-def plot_wordcloud(text, mask=None, max_words=200, max_font_size=100, figure_size=(24.0,16.0), color = 'white',
-                   title = None, title_size=40, image_color=False):
-    stopwords = set(STOPWORDS)
-    more_stopwords = {'u', "im"}
-    stopwords = stopwords.union(more_stopwords)
-
-    wordcloud = WordCloud(background_color=color,
-                    stopwords = stopwords,
-                    max_words = max_words,
-                    max_font_size = max_font_size, 
-                    random_state = 42,
-                    mask = None)
-    wordcloud.generate(str(text))
-    
-    plt.figure(figsize=figure_size)
-    if image_color:
-        image_colors = ImageColorGenerator(mask);
-        plt.imshow(wordcloud.recolor(color_func=image_colors), interpolation="bilinear");
-        plt.title(title, fontdict={'size': title_size,  
-                                  'verticalalignment': 'bottom'})
-    else:
-        plt.imshow(wordcloud);
-        plt.title(title, fontdict={'size': title_size, 'color': 'black', 
-                                  'verticalalignment': 'bottom'})
-    plt.axis('off');
-    plt.tight_layout()
-
-def predict_sentiment(text, model):
-    model_dict = {
-    'RoBERTa': 'cardiffnlp/twitter-roberta-base-sentiment',
-    'DistilBERT': 'distilbert-base-uncased-finetuned-sst-2-english'
-}
-
-    if model not in model_dict:
-        raise Exception(f"Model {model} not found!")
-    
-    # load the model
-    tokenizer = AutoTokenizer.from_pretrained(model_dict[model])
-    model = AutoModelForSequenceClassification.from_pretrained(model_dict[model])
-    # Run for Roberta Model
-    encoded_text = tokenizer(text, return_tensors='pt')
-    output = model(**encoded_text)
-    scores = output[0][0].detach().numpy()
-    scores = softmax(scores)
-    scores_dict = {
-        'Negative' : scores[0],
-        'Neutral' : scores[1],
-        'Positive' : scores[2]
-    }
-    # visualize the scores dict as a 
-    # return key and the value for the max value
-    return max(scores_dict, key=scores_dict.get), max(scores_dict.values())
 
 def generate_pie_chart(address, rating, positive, negative, neutral):
     # Data for the pie chart
@@ -108,6 +56,22 @@ def get_address(lat, lon):
         return get_address(lat, lon)
 
 
+    # Load the tokenizer and model (trainer)
+    tokenizer = load_tokenizer('path_to_tokenizer')
+    trainer = load_model('path_to_model')
+
+    st.title('Aspect Based Sentiment Analysis')
+
+    # Textbox for user input
+    user_input = st.text_area("Enter a review:")
+
+    # Predict button
+    if st.button('Predict'):
+        predicted_labels, scores = predict_sentiment(user_input, tokenizer, trainer)
+        st.write(f"Predicted Label: {predicted_labels[0]}")  # Display the first label for demonstration
+        # You can further process and display results as needed
+
+
 def main():
     load_dotenv()
 
@@ -121,61 +85,61 @@ def main():
     # query
     user_question = st.text_input("Classify the sentence:")
 
+    prediction_pipeline = PredictionPipeline()
     # add a button to run the model
     if st.button("Ask"):
         # run the model
-        answer, score = predict_sentiment(user_question, app_mode)
+        answer = prediction_pipeline.predict(user_question)
         # print the answer and the score in red
         st.write(f"Sentiment: {answer}")
-        st.write(f"Score: {score}")
 
-    # load mcd dataset
-    df = pd.read_csv('data/merged_df.csv', encoding='latin-1')
-    df = df.loc[df['review'].str.contains(r'[^\x00-\x7F]+') == False]
+    # # load mcd dataset
+    # df = pd.read_csv('data/merged_df.csv', encoding='latin-1')
+    # df = df.loc[df['review'].str.contains(r'[^\x00-\x7F]+') == False]
 
     
-    # location
-    locations = df[['latitude ', 'longitude', 'store_address', 'rating']].dropna().drop_duplicates()
-    # rename columns to match the format
-    locations.columns = ['lat', 'lon', 'store_address', 'rating']
+    # # location
+    # locations = df[['latitude ', 'longitude', 'store_address', 'rating']].dropna().drop_duplicates()
+    # # rename columns to match the format
+    # locations.columns = ['lat', 'lon', 'store_address', 'rating']
 
-    print(locations.head())
-    # create a folium map
+    # print(locations.head())
+    # # create a folium map
    
-    # Display the folium map using folium_static
-    m = folium.Map()
+    # # Display the folium map using folium_static
+    # m = folium.Map()
 
-    # Inside the loop where you add markers to the map
-    for index, row in locations.iterrows():
-        lat = row['lat']
-        lon = row['lon']
-        address = row['store_address']
-        rating = np.round(row['rating'],2)
-        positive = df.loc[df['store_address'] == address, 'positive'].iloc[0]
-        negative = df.loc[df['store_address'] == address, 'negative'].iloc[0]
-        neutral = df.loc[df['store_address'] == address, 'neutral'].iloc[0]
-        tooltip = f"Address: {address}\nRating: {rating}"
+    # # Inside the loop where you add markers to the map
+    # for index, row in locations.iterrows():
+    #     lat = row['lat']
+    #     lon = row['lon']
+    #     address = row['store_address']
+    #     rating = np.round(row['rating'],2)
+    #     positive = df.loc[df['store_address'] == address, 'positive'].iloc[0]
+    #     negative = df.loc[df['store_address'] == address, 'negative'].iloc[0]
+    #     neutral = df.loc[df['store_address'] == address, 'neutral'].iloc[0]
+    #     tooltip = f"Address: {address}\nRating: {rating}"
         
-        # Generate the pie chart HTML code for the specific store
-        popup_html = generate_pie_chart(address, rating, positive, negative, neutral)
+    #     # Generate the pie chart HTML code for the specific store
+    #     popup_html = generate_pie_chart(address, rating, positive, negative, neutral)
         
-        # Create a popup with the pie chart HTML code
-        popup = folium.Popup(popup_html, max_width=400)
+    #     # Create a popup with the pie chart HTML code
+    #     popup = folium.Popup(popup_html, max_width=400)
 
-        # Add a marker for the store with the popup
-        folium.Marker(location=[lat, lon], tooltip=tooltip, popup=popup).add_to(m)
+    #     # Add a marker for the store with the popup
+    #     folium.Marker(location=[lat, lon], tooltip=tooltip, popup=popup).add_to(m)
 
-    # Display the folium map using folium_static
-    st.markdown('### Map of McDonald\'s Stores')
-    folium_static(m)
-    # wordcloud
-    # st.markdown('### Wordcloud')
-    # plot_wordcloud(df['review'], title="Word Cloud of Reviews")
+    # # Display the folium map using folium_static
+    # st.markdown('### Map of McDonald\'s Stores')
+    # folium_static(m)
+    # # wordcloud
+    # # st.markdown('### Wordcloud')
+    # # plot_wordcloud(df['review'], title="Word Cloud of Reviews")
     
 
-    # Show the reviews
-    st.markdown('### Reviews')
-    #st.write(df['review'])
+    # # Show the reviews
+    # st.markdown('### Reviews')
+    # #st.write(df['review'])
 
 
 if __name__ == '__main__':

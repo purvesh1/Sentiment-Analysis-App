@@ -7,7 +7,7 @@ __version__ = "0.0.0"
 
 REPO_NAME = "Sentiment-Analysis-App"
 AUTHOR_USER_NAME = "purvesh1"
-SRC_REPO = "Sentiment-Analysis-App"
+SRC_REPO = "sentimentAnalysisApp"
 AUTHOR_EMAIL = "purvesh@student.ie.edu"
 
 
