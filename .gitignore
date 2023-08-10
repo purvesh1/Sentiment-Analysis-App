@@ -162,3 +162,4 @@ cython_debug/
 data/
 
 !data/McDonald_s_Reviews.csv
+artifacts/

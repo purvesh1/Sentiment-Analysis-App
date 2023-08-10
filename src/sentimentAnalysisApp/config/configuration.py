@@ -1,6 +1,6 @@
 from sentimentAnalysisApp.constants import *
 from sentimentAnalysisApp.utils.common import read_yaml, create_directories
-from sentimentAnalysisApp.entity import (DataIngestionConfig, DataValidationConfig, DataTransformationConfig, ModelTrainerConfig, ModelEvaluationConfig)
+from sentimentAnalysisApp.entity import (DataTransformationConfig, ModelEvaluationConfig)
 
 
 class ConfigurationManager:
