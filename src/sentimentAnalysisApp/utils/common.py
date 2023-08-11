@@ -6,8 +6,15 @@ from ensure import ensure_annotations
 from box import ConfigBox
 from pathlib import Path
 from typing import Any
+import folium
+from streamlit_folium import folium_static
+import numpy as np
+import matplotlib.pyplot as plt
+import base64
+import io
 
-
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 
 @ensure_annotations
 def read_yaml(path_to_yaml: Path) -> ConfigBox:
@@ -90,3 +97,57 @@ def plot_wordcloud(text, mask=None, max_words=200, max_font_size=100, figure_siz
                                   'verticalalignment': 'bottom'})
     plt.axis('off');
     plt.tight_layout()
+
+@ensure_annotations
+def generate_pie_chart(address, rating, positive, negative, neutral):
+    # Data for the pie chart
+    sizes = [positive, negative, neutral]
+    labels = ['Positive', 'Negative', 'Neutral']
+    colors = ['green', 'red', 'blue']
+
+    # Create the pie chart
+    plt.figure(figsize=(3, 3))  # Adjust the size of the pie chart
+    plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
+    plt.axis('equal')  # Equal aspect ratio ensures the pie chart appears as a circle
+
+    # Add store name and rating at the bottom of the pie chart
+    plt.text(-0.1, 1.3, f"{address}", ha='center', fontsize=7, weight='bold')  # Changed y-coordinate to 1.1
+    plt.text(0.6, 1.15, f"Rating: {rating}", ha='center', fontsize=10, weight='bold')  # Changed y-coordinate to 1
+
+    # Save the pie chart to a bytes buffer
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+
+    # Convert the bytes buffer to a base64-encoded string
+    pie_chart_data = base64.b64encode(buf.getvalue()).decode('utf-8')
+
+    # Generate the HTML code for the pie chart
+    html = f'<img src="data:image/png;base64,{pie_chart_data}" />'
+    
+    return html
+
+@ensure_annotations
+def get_address(lat, lon):
+    geolocator = Nominatim(user_agent="sentiment_analysis_app")
+    try:
+        location = geolocator.reverse((lat, lon), exactly_one=True)
+        return location.address
+    except GeocoderTimedOut:
+        return get_address(lat, lon)
+
+
+    # Load the tokenizer and model (trainer)
+    tokenizer = load_tokenizer('path_to_tokenizer')
+    trainer = load_model('path_to_model')
+
+    st.title('Aspect Based Sentiment Analysis')
+
+    # Textbox for user input
+    user_input = st.text_area("Enter a review:")
+
+    # Predict button
+    if st.button('Predict'):
+        predicted_labels, scores = predict_sentiment(user_input, tokenizer, trainer)
+        st.write(f"Predicted Label: {predicted_labels[0]}")  # Display the first label for demonstration
+        # You can further process and display results as needed

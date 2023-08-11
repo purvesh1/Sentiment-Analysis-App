@@ -1,98 +1,97 @@
 from dotenv import load_dotenv
 import streamlit as st
-from transformers import pipeline
-from transformers import AutoTokenizer
-from transformers import AutoModelForSequenceClassification
-from scipy.special import softmax
 import pandas as pd
-import folium
-from streamlit_folium import folium_static
-from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut
-import matplotlib.pyplot as plt
-import numpy as np
-import io
-import base64
+# from box.exceptions import BoxValueError
+# from sentimentAnalysisApp.utils.common import get_address
+
 from sentimentAnalysisApp.pipeline.prediction import PredictionPipeline
 
 
 st.set_option('deprecation.showPyplotGlobalUse', False)       
 
-def generate_pie_chart(address, rating, positive, negative, neutral):
-    # Data for the pie chart
-    sizes = [positive, negative, neutral]
-    labels = ['Positive', 'Negative', 'Neutral']
-    colors = ['green', 'red', 'blue']
 
-    # Create the pie chart
-    plt.figure(figsize=(3, 3))  # Adjust the size of the pie chart
-    plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
-    plt.axis('equal')  # Equal aspect ratio ensures the pie chart appears as a circle
-
-    # Add store name and rating at the bottom of the pie chart
-    plt.text(-0.1, 1.3, f"{address}", ha='center', fontsize=7, weight='bold')  # Changed y-coordinate to 1.1
-    plt.text(0.6, 1.15, f"Rating: {rating}", ha='center', fontsize=10, weight='bold')  # Changed y-coordinate to 1
-
-    # Save the pie chart to a bytes buffer
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-
-    # Convert the bytes buffer to a base64-encoded string
-    pie_chart_data = base64.b64encode(buf.getvalue()).decode('utf-8')
-
-    # Generate the HTML code for the pie chart
-    html = f'<img src="data:image/png;base64,{pie_chart_data}" />'
-    
-    return html
+# Import necessary libraries
+import streamlit as st
 
 
-def get_address(lat, lon):
-    geolocator = Nominatim(user_agent="sentiment_analysis_app")
-    try:
-        location = geolocator.reverse((lat, lon), exactly_one=True)
-        return location.address
-    except GeocoderTimedOut:
-        return get_address(lat, lon)
+# Define the data fetch function (placeholder for now)
+def fetch_data():
+    # Placeholder function to fetch data
+    # Ideally, this would fetch data from your database or other sources
+    return None
 
+# Create a function for each page/section:
 
-    # Load the tokenizer and model (trainer)
-    tokenizer = load_tokenizer('path_to_tokenizer')
-    trainer = load_model('path_to_model')
-
-    st.title('Aspect Based Sentiment Analysis')
-
-    # Textbox for user input
-    user_input = st.text_area("Enter a review:")
-
-    # Predict button
-    if st.button('Predict'):
-        predicted_labels, scores = predict_sentiment(user_input, tokenizer, trainer)
-        st.write(f"Predicted Label: {predicted_labels[0]}")  # Display the first label for demonstration
-        # You can further process and display results as needed
-
-
-def main():
-    load_dotenv()
-
-    st.set_page_config(page_title="Sentiment Analysis")
+def show_home():
+    # Your main visualization for the homepage here
     st.header("Analyse your sentiment 💬")
-
-    # add drop down menu
-    st.sidebar.header("Menu")
-    app_mode = st.sidebar.selectbox("Choose the model", ["RoBERTa", "DistilBERT"])
+    st.write("Enter a sentence about your dining experience, and we'll analyze the sentiments for different aspects like food, service, and ambiance.")
 
     # query
-    user_question = st.text_input("Classify the sentence:")
+    user_question = st.text_input("Try it out:")
 
     prediction_pipeline = PredictionPipeline()
     # add a button to run the model
-    if st.button("Ask"):
+    if st.button("Analyse"):
         # run the model
         answer = prediction_pipeline.predict(user_question)
         # print the answer and the score in red
         st.write(f"Sentiment: {answer}")
+    # (Include the code to generate and display the heatmap here.)
 
+def show_time_series():
+    st.title('Sentiment Trends Over Time')
+    # Your time series visualization here
+    st.write('Interactive line chart showing sentiment over time.')
+    # (Include the code to generate and display the time series chart here.)
+
+def show_location_analysis():
+    st.title('Location-based Sentiment Analysis')
+    # Your location-based sentiment map visualization here
+    st.write('Interactive map showing sentiments across different locations.')
+    # (Include the code to generate and display the sentiment map here.)
+
+def show_detailed_insights():
+    st.title('Deep Dive Into Aspects')
+    # Dropdown to select specific aspects
+    aspect = st.selectbox('Select an aspect for deeper insights', ['Fries', 'Service', 'Cleanliness', 'Ambience'])
+    # Depending on the aspect selected, show relevant visuals and insights.
+    st.write(f'Insights for {aspect}')
+    # (Include the code to generate and display visuals for the selected aspect.)
+
+def show_about():
+    st.title('About This Dashboard')
+    st.write('This dashboard provides insights into customer sentiments based on reviews from Google Places API. It leverages BERT-based aspect sentiment analysis to derive detailed sentiments on various aspects of McDonald’s services and products.')
+
+# Display content based on the navigation choice:
+
+
+
+
+
+def main():
+    load_dotenv()
+    # Set the page title and layout
+    st.set_page_config(page_title="McDonald's Sentiment Analysis", layout='wide', initial_sidebar_state='collapsed')
+
+    # Sidebar for Navigation
+    st.sidebar.title('Navigation')
+    section = st.sidebar.radio('Go to', ['Home', 'Time Series Analysis', 'Location Analysis', 'Detailed Insights', 'About'])
+
+ 
+    df = pd.read_csv('artifacts/absa_matrix.csv', encoding='latin-1')
+
+        
+    if section == 'Home':
+        show_home()
+    elif section == 'Time Series Analysis':
+        show_time_series()
+    elif section == 'Location Analysis':
+        show_location_analysis()
+    elif section == 'Detailed Insights':
+        show_detailed_insights()
+    elif section == 'About':
+        show_about()
     # # load mcd dataset
     # df = pd.read_csv('data/merged_df.csv', encoding='latin-1')
     # df = df.loc[df['review'].str.contains(r'[^\x00-\x7F]+') == False]
