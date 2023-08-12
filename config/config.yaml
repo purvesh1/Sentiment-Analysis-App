@@ -1,0 +1,12 @@
+artifacts_root: artifacts
+
+data_transformation:
+  root_dir: artifacts/data_transformation
+  data_path: data/McDonald_s_Reviews.csv
+  data_out_path: artifacts/McDonald_s_Reviews_ABS.csv
+
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  data_path: artifacts/McDonald_s_Reviews_ABS.csv
+  model_save_path: pretrained
+  tokenizer_save_path: pretrained
