@@ -46,7 +46,6 @@ class PredictionPipeline:
         predictions = model.predict(test_predict_dataset)
         probabilities = tf.nn.softmax(predictions[0], axis=-1).numpy()
         predicted_labels = np.argmax(probabilities, axis=-1)
-
         # Convert predictions and scores to a DataFrame for visualization
         df_results = pd.DataFrame({
             'Predicted_Label': predicted_labels
