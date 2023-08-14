@@ -6,9 +6,11 @@ nltk
 datasets
 tensorflow
 seaborn
+altair<5
 scipy
 python-box==6.0.2
 folium
+geopy
 streamlit_folium
 py7zr
 pandas
@@ -17,5 +19,4 @@ PyYAML
 matplotlib
 notebook
 ensure==1.0.2
-altair<5
 -e .
