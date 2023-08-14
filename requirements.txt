@@ -25,7 +25,7 @@ notebook
 boto3
 mypy-boto3-s3
 ensure==1.0.2
-accelerate==0.20.1
-uvicorn==0.18.3
-Jinja2==3.1.2
+# accelerate==0.20.1
+# uvicorn==0.18.3
+# Jinja2==3.1.2
 -e .
