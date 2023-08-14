@@ -5,15 +5,15 @@ transformers[sentencepiece]
 torch
 nltk
 datasets
-langchain==0.0.154
-faiss-cpu==1.7.4
+tensorflow
+seaborn
 altair<5
 scipy
 python-box==6.0.2
 folium
 geopy
 streamlit_folium
-wordcloud
+#wordcloud
 sacrebleu 
 rouge_score 
 py7zr
@@ -25,7 +25,7 @@ notebook
 boto3
 mypy-boto3-s3
 ensure==1.0.2
-accelerate==0.20.1
-uvicorn==0.18.3
-Jinja2==3.1.2
+#accelerate==0.20.1
+#uvicorn==0.18.3
+# Jinja2==3.1.2
 -e .

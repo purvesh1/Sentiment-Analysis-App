@@ -1,3 +1,4 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
 data/McDonald_s_Reviews.csv filter=lfs diff=lfs merge=lfs -text
 pretrained/pytorch_model.bin filter=lfs diff=lfs merge=lfs -text
+absa-bert-tf filter=lfs diff=lfs merge=lfs -text

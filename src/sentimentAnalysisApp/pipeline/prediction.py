@@ -1,25 +1,25 @@
 from sentimentAnalysisApp.config.configuration import ConfigurationManager
 from sentimentAnalysisApp.components.data_transformation import DataTransformation
-from transformers import BertTokenizer, BertForSequenceClassification, Trainer
-from scipy.special import softmax
-import numpy as np
-import torch
-from transformers import pipeline
-import pandas as pd
 from sentimentAnalysisApp.logging import logger
 from sentimentAnalysisApp.entity import ModelEvaluationConfig
 
+from scipy.special import softmax
+import numpy as np
+import pandas as pd
 
-class ABSA_PredictDataset(torch.utils.data.Dataset):
-    def __init__(self, encodings):
-        self.encodings = encodings
+import tensorflow as tf
+from transformers import BertTokenizer, TFBertForSequenceClassification
 
-    def __getitem__(self, idx):
-        item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
-        return item
+# class ABSA_PredictDataset(torch.utils.data.Dataset):
+#     def __init__(self, encodings):
+#         self.encodings = encodings
 
-    def __len__(self):
-        return len(self.encodings['input_ids'])  # Assuming 'input_ids' is a key in encodings
+#     def __getitem__(self, idx):
+#         item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
+#         return item
+
+#     def __len__(self):
+#         return len(self.encodings['input_ids'])  # Assuming 'input_ids' is a key in encodings
 
 class PredictionPipeline:
     def __init__(self):
@@ -35,33 +35,22 @@ class PredictionPipeline:
             input_data = [input_data]
         
         reviews_list, combinations_list = data_transformation.add_ABS_list(input_data)
-
         tokenizer = BertTokenizer.from_pretrained(model_evaluation_config.tokenizer_save_path)
-        model = BertForSequenceClassification.from_pretrained(model_evaluation_config.model_save_path)
-        model.eval()
-
-        trainer = Trainer(
-                model=model
-                )
-
-        test_encodings = tokenizer(reviews_list, combinations_list, truncation=True, padding=True, return_tensors="pt")
-        test_predict_dataset = ABSA_PredictDataset(test_encodings)
         
-        results = trainer.predict(test_predict_dataset)
+        model = TFBertForSequenceClassification.from_pretrained(model_evaluation_config.model_save_path)
 
-        scores = [softmax(prediction) for prediction in results.predictions]
-
-        # Get the predicted labels
-        predicted_labels = [np.argmax(x) for x in scores]
+        test_encodings = tokenizer(reviews_list, combinations_list, truncation=True, padding=True, return_tensors="tf")
+        test_predict_dataset = tf.data.Dataset.from_tensor_slices((dict(test_encodings),))
+        batch_size = 32
+        test_predict_dataset = test_predict_dataset.batch(batch_size)
+        predictions = model.predict(test_predict_dataset)
+        probabilities = tf.nn.softmax(predictions[0], axis=-1).numpy()
+        predicted_labels = np.argmax(probabilities, axis=-1)
 
         # Convert predictions and scores to a DataFrame for visualization
         df_results = pd.DataFrame({
-            'Predicted_Label': predicted_labels,
-            'Scores': scores
+            'Predicted_Label': predicted_labels
         })
-
-        # Display the first few rows of the DataFrame
-        df_results.head()
 
         print("Dialogue:")
         print(input_data)

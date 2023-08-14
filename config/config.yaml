@@ -8,5 +8,5 @@ data_transformation:
 model_evaluation:
   root_dir: artifacts/model_evaluation
   data_path: artifacts/McDonald_s_Reviews_ABS.csv
-  model_save_path: pretrained
-  tokenizer_save_path: pretrained
+  model_save_path: absa-bert-tf
+  tokenizer_save_path: absa-bert-tf
