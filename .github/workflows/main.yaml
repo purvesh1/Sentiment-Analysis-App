@@ -14,7 +14,16 @@ jobs:
       # Check-out your repository.
       - name: Checkout
         uses: actions/checkout@v2
+      
+      # Install git-lfs
+      - name: Install git-lfs
+        run: sudo apt-get install git-lfs
 
+      # Initialize and pull large files
+      - name: Pull LFS files
+        run: |
+          git lfs install
+          git lfs pull
 
 ### ⬇ IMPORTANT PART ⬇ ###
 
