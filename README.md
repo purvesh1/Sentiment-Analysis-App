@@ -2,7 +2,7 @@
 I/p a sentence, o/p the classified sentiment
 
 
-### Procedure for creation:
+### Plan of action:
 1. Create a modular template and include  anything else if required
 2. Create a virtual environment
 3. Update and run setup.py
