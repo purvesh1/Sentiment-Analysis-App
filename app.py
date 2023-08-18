@@ -8,8 +8,8 @@ import streamlit as st
 import folium  
 from streamlit_folium import folium_static
 import numpy as np
-from sentimentAnalysisApp.pipeline.prediction import PredictionPipeline
-from sentimentAnalysisApp.constants import *
+from src.sentimentAnalysisApp.pipeline.prediction import PredictionPipeline
+from src.sentimentAnalysisApp.constants import *
 
 class ReviewPredictionMatrix:
     def __init__(self, aspects, sentiments):
